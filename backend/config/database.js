@@ -5,7 +5,7 @@ let mongod = null;
 
 const connectDB = async () => {
   try {
-    let dbUrl = process.env.MONGODB_URI;
+    let dbUrl = process.env.MONGODB_URI || process.env.MONGO_URL;
 
     if (process.env.NODE_ENV === 'test' || !dbUrl || dbUrl.includes('localhost')) {
       console.log('Starting MongoDB Memory Server...');
