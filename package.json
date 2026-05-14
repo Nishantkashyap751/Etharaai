@@ -5,11 +5,11 @@
   "main": "server.js",
 
   "scripts": {
-    "build": "npm install",
+    "build": "npm install && cd backend && npm install",
     "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "postinstall": "cd backend && npm install",
     "start-backend": "cd backend && npm start",
     "start-frontend": "cd frontend && npm start",
     "start": "node backend/server.js"
-    
-}
+  }
 }
