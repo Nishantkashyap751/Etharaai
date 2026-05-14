@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build": "npm install",
+    "start": "node server.js",
     "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "start-backend": "cd backend && npm start",
     "start-frontend": "cd frontend && npm start"
