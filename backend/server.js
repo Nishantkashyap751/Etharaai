@@ -10,10 +10,37 @@ const taskRoutes = require('./routes/taskRoutes');
 
 const app = express();
 
+// Normalise FRONTEND_URL — ensure it always carries a protocol so that
+// origin comparisons work correctly regardless of how the env var is set.
+const rawFrontendUrl = process.env.FRONTEND_URL || '';
+const frontendUrl = rawFrontendUrl
+  ? rawFrontendUrl.startsWith('http://') || rawFrontendUrl.startsWith('https://')
+    ? rawFrontendUrl
+    : `https://${rawFrontendUrl}`
+  : null;
+
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  ...(frontendUrl ? [frontendUrl] : []),
+];
+
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. curl, Postman, server-to-server)
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn(`CORS blocked request from origin: ${origin}`);
+    callback(new Error(`CORS policy does not allow origin: ${origin}`));
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,9 +71,11 @@ const startServer = async () => {
     // Connect to MongoDB
     await connectDB();
 
-    const PORT = process.env.PORT || 5000;
+    const PORT = process.env.PORT || 8080;
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
+      console.log(`FRONTEND_URL env: ${process.env.FRONTEND_URL || '(not set)'}`);
+      console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
